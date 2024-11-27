@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>DNS Tool</title>
+        <meta name="description" content="Tool to compare all DNS records for different nameservers">
+
+        <meta property="og:title" content="DNS Tool">
+        <meta property="og:description" content="Tool to compare all DNS records for different nameservers">
+        <meta property="og:image" content="static/image.png">
+        <meta property="og:url" content="dns.shymike.tech">
+        <meta property="og:site_name" content="DNS Check / Compare">
+        <meta property="og:type" content="website">
+                
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="DNS Check / Compare">
+        <meta name="twitter:description" content="Tool to compare all DNS records for different nameservers">
+        <meta name="twitter:image" content="static/image.png">
+
+        <style>@import url(https://fonts.bunny.net/css?family=rethink-sans:400);</style>
+        <link rel="stylesheet" href="static/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <h1>DNS Query / Compare Tool</h1>
+            <div class="input-group">
+                <input type="text" id="domainInput"
+                    placeholder="Enter domain name" />
+                <button id="requeryButton" class="queryButton">Refetch Detected<div
+                    class="loadingSpinner" id="loadingSpinner"></div></button>
+                <button id="queryButton" class="queryButton">Fetch DNS Records<div
+                    class="loadingSpinner" id="loadingSpinner2"></div></button>
+            </div>
+
+            <a href="#popup" class="popup-trigger">🛈</a>
+
+            <div id="popup" class="popup">
+                <div class="popup-content">
+                    <details>
+                        <summary class="collapsible"><h2>Nameserver
+                                List</h2></summary>
+                        <ul>
+                            {% for name, ips in nameserver_list.items() %}
+                                <details>
+                                    <summary class="collapsible"><strong>{{ name }}</strong></summary>
+                                    <p>{{ ips | join(", ") }}</p>
+                                </details>
+                            {% endfor %}
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary class="collapsible"><h2>Record Type
+                                List</h2></summary>
+                        <ul>
+                            {% for type in rdata_types %}
+                                <li>{{ type }}</li>
+                            {% endfor %}
+                        </ul>
+                    </details>
+
+                    <a href="#" class="close-popup">Close</a>
+                </div>
+            </div>
+
+            <div id="responseContainer">
+
+            </div>
+        </div>
+        <script src="static/script.js"></script>
+    </body>
+</html>
