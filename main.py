@@ -321,6 +321,12 @@ def get_found_records(results):
     return record_types
 
 
+def formatted_country():
+    """Return a the country as a string"""
+    country = request.environ.get("country")
+    return country if country else "N/A"
+
+
 @app.route("/dns-query", methods=["POST"])
 @limiter.limit("8 per minute")
 @disable_same_ip_concurrency
@@ -328,7 +334,7 @@ def dns_query():
     """Regular dns query"""
     chosen_domain = request.json.get("domain")
     if is_valid_dns_query(chosen_domain):
-        print(f"{request.remote_addr} - {chosen_domain}")
+        print(f"{request.remote_addr} {formatted_country()} - QUERY - {chosen_domain}")
         results = asyncio.run(
             query_domain_multi_nameserver(
                 chosen_domain, SELECTED_RDATA_TYPES, nameserver_list
@@ -342,7 +348,7 @@ def dns_query():
                 "types": get_found_records(results),
             }
         )
-    print(f"BLOCKED - {request.remote_addr} - QUERY - {chosen_domain}")
+    print(f"BLOCKED - {request.remote_addr} {formatted_country()} - QUERY - {chosen_domain}")
     return make_response(jsonify({"error": "Invalid domain"}), 400)
 
 
@@ -354,19 +360,13 @@ def dns_requery():
     chosen_domain = request.json.get("domain")
     chosen_rdata_types = request.json.get("types", [])
     filtered_rdata_types = list(
-        set(
-            [
-                rdata_type
-                for rdata_type in chosen_rdata_types
-                if rdata_type in SELECTED_RDATA_TYPES
-            ]
-        )
+        {rdata_type for rdata_type in chosen_rdata_types if rdata_type in SELECTED_RDATA_TYPES}
     )
     if is_valid_dns_query(chosen_domain):
         if not filtered_rdata_types:
             return make_response(jsonify({"error": "Invalid query types"}), 400)
         print(
-            f"{request.remote_addr} - REQUERY - " \
+            f"{request.remote_addr} {formatted_country()} - REQUERY - " \
             f"Amount: {len(filtered_rdata_types)} - {chosen_domain}"
         )
         results = asyncio.run(
@@ -383,7 +383,7 @@ def dns_requery():
             }
         )
     print(
-        f"BLOCKED - {request.remote_addr} - REQUERY - " \
+        f"BLOCKED - {request.remote_addr} {formatted_country()} - REQUERY - " \
         f"Amount: {len(filtered_rdata_types)} - {chosen_domain}"
     )
     return make_response(jsonify({"error": "Invalid domain"}), 400)
